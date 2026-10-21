@@ -88,8 +88,9 @@ module noc_vc_input_port #(
         .occupancy(count_vc1)
     );
 
-    // A VC is ready to request next cycle if it has entries that are not currently being read out
-    assign req_ready_vc0 = (count_vc0 > 1) || (count_vc0 == 1 && !rd_en_vc0);
-    assign req_ready_vc1 = (count_vc1 > 1) || (count_vc1 == 1 && !rd_en_vc1);
+    // A VC is ready to request only when it has data and is not currently being read out,
+    // ensuring the next flit settles on dout before route computation and arbitration
+    assign req_ready_vc0 = !empty_vc0 && !rd_en_vc0;
+    assign req_ready_vc1 = !empty_vc1 && !rd_en_vc1;
 
 endmodule

@@ -13,3 +13,8 @@ xsim.dir/
 # OS generated files
 Thumbs.db
 .DS_Store
+
+# Runtime simulation pointer
+dataset/active_workload.txt
+__pycache__/
+*.pyc

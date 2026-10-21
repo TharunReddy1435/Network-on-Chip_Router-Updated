@@ -1,10 +1,21 @@
 # Network-on-Chip (NoC) Router & 2x2 Mesh: Comprehensive Team Guide & Viva Manual
 
-This guide is tailored specifically for **Shrestitha**, **Tharun**, **Bhavani**, and **Gowtham**. It provides complete technical explanations of each person's hardware modules, execution commands, architecture diagrams, and anticipated viva/defense questions with exact model answers.
+This guide is tailored specifically for **Shrestitha (`24ECB0B24`)**, **Tharun (`24ECB0B20`)**, **Bhavani (`24ECB0B60`)**, and **Gowtham (`24ECB0B41`)**. It provides complete technical explanations of each person's hardware modules, execution commands, architecture diagrams, benchmark datasets, visual plots, and anticipated viva/defense questions with exact model answers.
 
 ---
 
-## 1. Shrestitha: Buffering & Storage Lead
+## 👥 Team Roster & Module Ownership
+
+| Roll Number | Team Member | Engineering Role | Core Hardware Modules & Scripts |
+| :---: | :--- | :--- | :--- |
+| **`24ECB0B24`** | **Shrestitha** | **Buffering & Storage Lead** | Dual Virtual-Channel input buffers (`noc_vc_input_port.v`), synchronous circular FIFO (`noc_fifo.v`), First-Word Fall-Through (FWFT) logic, Head-of-Line (HoL) blocking elimination, credit pulse generation. |
+| **`24ECB0B20`** | **Tharun** | **Routing & Switching Lead** | Dimension-Order XY Routing units (`xy_routing.v`), deadlock/livelock prevention turn model, 10x5 Crossbar Switch Matrix (`crossbar_10x5.v`) with non-empty output qualification. |
+| **`24ECB0B60`** | **Bhavani** | **Arbitration & Flow Control Lead** | 10-input starvation-free Round-Robin Arbiter (`rr_arbiter_10.v`) with rotating cyclic priority, bounded latency guarantees ($\le 9$ cycles), Credit Counter flow control (`credit_counter.v`). |
+| **`24ECB0B41`** | **Gowtham** | **Integration & Verification Lead** | 2x2 2D-Mesh Interconnect (`noc_mesh_2x2.v`), Dataset-Driven Verification (`tb_noc_dataset_driven.v`), Scoreboard TB (`tb_noc_random_scoreboard.v`), Benchmark Suite (`generate_noc_dataset.py`, `generate_plots.py`), Kintex-7 FPGA Synthesis. |
+
+---
+
+## 1. Shrestitha (`24ECB0B24`): Buffering & Storage Lead
 
 ### Assigned Modules:
 * [`rtl/noc_fifo.v`](file:///d:/DN%20Project/rtl/noc_fifo.v) — First-Word Fall-Through (FWFT) Circular FIFO Buffer
@@ -12,9 +23,9 @@ This guide is tailored specifically for **Shrestitha**, **Tharun**, **Bhavani**,
 
 ### Module Architecture & Technical Deep-Dive:
 1. **First-Word Fall-Through (FWFT) Mechanism**:
-   - In standard FIFOs, data appears at `dout` only on the clock edge *after* `rd_en` is asserted (1-cycle read latency).
+   - In standard synchronous FIFOs, data appears at `dout` only on the clock edge *after* `rd_en` is asserted (1-cycle read latency).
    - In `noc_fifo.v`, FWFT is implemented via `assign dout = mem[rd_ptr];`.
-   - **Why this matters**: As soon as a flit enters the buffer, its header (destination coordinates) is combinatorially visible to the Routing Unit and Arbiter immediately without an extra read cycle, saving an entire clock cycle per hop!
+   - **Why this matters**: As soon as a flit enters the buffer, its header (destination coordinates) is combinatorially visible to the Routing Unit and Arbiter immediately without an extra read cycle, eliminating pipeline bubbles.
 2. **Dual Virtual Channels (VC0 and VC1)**:
    - Each physical input channel is equipped with **two independent FIFOs** (`fifo_vc0` and `fifo_vc1`).
    - Incoming flit bit `[5]` indicates the virtual channel ID (`0 = VC0`, `1 = VC1`).
@@ -26,6 +37,7 @@ This guide is tailored specifically for **Shrestitha**, **Tharun**, **Bhavani**,
 3. **Head-of-Line (HoL) Blocking Elimination**:
    - In a single-VC router, if packet A at the head of the queue is blocked (e.g. waiting for a congested East port), packet B behind it is trapped—even if packet B wants an idle North port.
    - With Dual VCs, packet A resides in VC0 while packet B resides in VC1. VC1 requests the North port independently, completely bypassing the blocked VC0!
+   - Our benchmarks confirm an **81.3% reduction in HoL contention** (see `docs/plots/plot4_hol_blocking_mitigation.svg`).
 4. **Credit Pulse Generation**:
    - Whenever a flit is read out (`rd_en && !empty`), `credit_out` pulses high for exactly 1 clock cycle to notify the upstream sending router that one buffer slot has been freed.
 
@@ -39,7 +51,7 @@ This guide is tailored specifically for **Shrestitha**, **Tharun**, **Bhavani**,
 
 ---
 
-## 2. Tharun: Routing & Switching Lead
+## 2. Tharun (`24ECB0B20`): Routing & Switching Lead
 
 ### Assigned Modules:
 * [`rtl/xy_routing.v`](file:///d:/DN%20Project/rtl/xy_routing.v) — Deterministic Dimension-Order XY Routing Unit
@@ -78,7 +90,7 @@ This guide is tailored specifically for **Shrestitha**, **Tharun**, **Bhavani**,
 
 ---
 
-## 3. Bhavani: Arbitration & Flow Control Lead
+## 3. Bhavani (`24ECB0B60`): Arbitration & Flow Control Lead
 
 ### Assigned Modules:
 * [`rtl/rr_arbiter_10.v`](file:///d:/DN%20Project/rtl/rr_arbiter_10.v) — 10-Input Starvation-Free Round-Robin Arbiter
@@ -97,7 +109,7 @@ This guide is tailored specifically for **Shrestitha**, **Tharun**, **Bhavani**,
      - Maintains a cyclic priority pointer `priority_ptr` ($0 \dots 9$).
      - The port granted in the current cycle is demoted to lowest priority in the next cycle:
        $$\text{priority\_ptr} \leftarrow (\text{granted\_id} + 1) \pmod{10}$$
-     - **Bounded Latency Guarantee**: Any requesting virtual channel is guaranteed to be serviced within at most 9 clock cycles, eliminating starvation.
+     - **Bounded Latency Guarantee**: Any requesting virtual channel is guaranteed to be serviced within at most 9 clock cycles, eliminating starvation (see `docs/plots/plot6_arbitration_fairness_and_delay.svg`).
 2. **Credit-Based Flow Control**:
    - Prevents buffer overflow and packet dropping under network congestion.
    - An internal counter `credits` is initialized on reset to `MAX_CREDITS` (8 buffer slots).
@@ -115,42 +127,40 @@ This guide is tailored specifically for **Shrestitha**, **Tharun**, **Bhavani**,
 
 ---
 
-## 4. Gowtham: Integration & Verification Lead
+## 4. Gowtham (`24ECB0B41`): Integration & Verification Lead
 
 ### Assigned Modules & Scripts:
 * [`rtl/noc_router_vc.v`](file:///d:/DN%20Project/rtl/noc_router_vc.v) — Upgraded 5-Port Virtual-Channel Router Top
 * [`rtl/noc_mesh_2x2.v`](file:///d:/DN%20Project/rtl/noc_mesh_2x2.v) — Multi-Core 2x2 2D-Mesh Interconnect (4 Routers, 4 PEs)
+* [`tb/tb_noc_dataset_driven.v`](file:///d:/DN%20Project/tb/tb_noc_dataset_driven.v) — Dataset-Driven Verification Testbench
 * [`tb/tb_noc_random_scoreboard.v`](file:///d:/DN%20Project/tb/tb_noc_random_scoreboard.v) — Constrained-Random Scoreboard Testbench
 * [`tb/tb_noc_mesh_2x2.v`](file:///d:/DN%20Project/tb/tb_noc_mesh_2x2.v) — System-Level 2x2 Mesh Multi-Hop Testbench
-* [`scripts/benchmark_traffic.py`](file:///d:/DN%20Project/scripts/benchmark_traffic.py) — Python Traffic Benchmarking Suite
+* [`scripts/generate_noc_dataset.py`](file:///d:/DN%20Project/scripts/generate_noc_dataset.py) — Dataset Generator Suite
+* [`scripts/generate_plots.py`](file:///d:/DN%20Project/scripts/generate_plots.py) — Publication-Quality Vector Plots Generator
 * [`scripts/run_synth_vc.tcl`](file:///d:/DN%20Project/scripts/run_synth_vc.tcl) — Vivado Kintex-7 FPGA Synthesis Script
 
 ### Module Architecture & Verification Deep-Dive:
-1. **Constrained-Random Verification (CRV) with Automated Scoreboard**:
+1. **Dataset-Driven Verification (`tb_noc_dataset_driven.v`)**:
+   - Ingests 5 standardized benchmark datasets from `dataset/` using `$readmemh`.
+   - Replays cycle-accurate traces, computes packet latency, tracks network throughput, and verifies 100% lossless delivery.
+2. **Constrained-Random Verification (CRV) with Automated Scoreboard**:
    - In `tb_noc_random_scoreboard.v`, an automated stimulus generator injects random flits with varying destinations, VCs, and payloads.
-   - An independent **Golden Reference Model** calculates the expected egress port.
-   - Dynamic FIFO queues store expected flits per output port.
-   - An egress monitor compares actual output flits against expected queue flits cycle-by-cycle, reporting:
-     - Bit-exact payload matching
-     - In-order packet delivery
-     - Detection of unexpected/spurious packets
+   - An independent Golden Reference Model checks flit arrival order, data corruption, and packet loss.
    - **Result**: 52/52 packets verified with **0 scoreboard errors** and **0 assertion failures**!
-2. **2x2 2D-Mesh System Interconnect**:
-   - Interconnects 4 routers: `router_00` (0,0), `router_10` (1,0), `router_01` (0,1), and `router_11` (1,1).
-   - Connects 4 Processing Elements (`PE0`..`PE3`).
-   - Boundary ports (North of row 0, South of row 1, West of col 0, East of col 1) are cleanly tied off.
-   - **Multi-Hop Traversal**: Verified multi-hop routing from PE0 to PE3 (2 hops, 5 cycles), wormhole packets (Head $\to$ Body $\to$ Tail), and concurrent 4-node traffic matrix with zero deadlock!
-3. **Traffic Performance Benchmarking**:
-   - Python cycle-accurate simulator evaluates Uniform Random, Hotspot (Memory Controller at PE3), and Transpose traffic across offered loads ($0.10 \dots 1.00$ flits/cycle/node).
-   - Proves that Dual-VC increases saturation throughput by **up to 7.1%** and reduces latency by **up to 12.2%** under congestion.
+3. **2x2 2D-Mesh System Interconnect**:
+   - Connects 4 routers in a 2D mesh layout with 4 Processing Elements (`PE0`..`PE3`).
+   - Verified multi-hop routing from PE0 to PE3 (2 hops, 5 cycles), wormhole packets (Head $\to$ Body $\to$ Tail), and concurrent 4-node traffic matrix with zero deadlock!
+4. **Traffic Performance Benchmarking & Visual Plots**:
+   - Evaluates Uniform Random, Hotspot (PE3 Memory), Transpose, Bit-Complement, and CNN ResNet workloads.
+   - Generates 7 visual vector plots in `docs/plots/` covering latency, throughput, HoL blocking, FPGA utilization, arbiter fairness, and latency CDF.
 
 ### Anticipated Viva / Review Questions for Gowtham:
-1. **Q: How does the testbench verify that the design is glitch-free and meets setup/hold requirements?**
-   - *Answer*: "Stimulus signals are driven `#1` delay after `posedge clk`, avoiding active delta-cycle race conditions. Monitors sample signals with `#1` delay after clock edges to inspect stabilized flip-flop outputs, ensuring glitch-free verification."
+1. **Q: How did you implement the Professor's suggestions?**
+   - *Answer*: "We addressed all three suggestions: (1) Created 5 benchmark datasets in CSV and HEX formats with a dataset-driven testbench (`tb_noc_dataset_driven.v`); (2) Generated 7 publication-quality visual plots in `docs/plots/` showing latency-load curves, saturation throughput, and FPGA hardware comparisons; (3) Added a comprehensive 2023–2026 literature survey in `docs/literature_survey_2023_2026.md` comparing our work against premier IEEE papers."
 2. **Q: What is the hardware area cost of adding Virtual Channels?**
-   - *Answer*: "Doubling the FIFOs from 5 to 10 and expanding the crossbar from 5x5 to 10x5 increases slice LUT utilization from 657 LUTs to ~1,280 LUTs on Kintex-7. However, this represents only 3.1% of the FPGA, while providing a 35-40% delay in network saturation."
+   - *Answer*: "Doubling the FIFOs from 5 to 10 and expanding the crossbar from 5x5 to 10x5 increases slice LUT utilization from 657 LUTs to 1,271 LUTs on Kintex-7. However, this represents only 3.10% of the FPGA, operating at 227.48 MHz, while delaying network saturation and providing higher throughput."
 3. **Q: How does wormhole routing work in your multi-flit packet test?**
-   - *Answer*: "A multi-flit packet consists of a Head flit (which contains routing coordinates and allocates the virtual channel path), one or more Body flits (carrying raw payload), and a Tail flit (which closes and frees the channel allocation). Body and Tail flits inherit the path established by the Head flit."
+   - *Answer*: "A multi-flit packet consists of a Head flit (allocates the routing path and VC), Body flits (carry raw payload), and a Tail flit (releases the route). Body and Tail flits inherit the path established by the Head flit, verified in Test 3 of `tb_noc_mesh_2x2.v` and in `dataset/cnn_resnet_layer_traffic`."
 
 ---
 
@@ -158,26 +168,41 @@ This guide is tailored specifically for **Shrestitha**, **Tharun**, **Bhavani**,
 
 Run these exact commands in PowerShell in the project directory (`d:\DN Project`):
 
-### 1. Run Constrained-Random Scoreboard Simulation (Dual-VC Router):
+### 1. Run Dataset-Driven Verification Simulation:
 ```powershell
-& 'D:\xilinx\Vivado\2023.1\bin\xvlog.bat' -work work rtl/credit_counter.v rtl/crossbar_10x5.v rtl/crossbar_5x5.v rtl/noc_fifo.v rtl/noc_mesh_2x2.v rtl/noc_router_top.v rtl/noc_router_vc.v rtl/noc_vc_input_port.v rtl/rr_arbiter_10.v rtl/rr_arbiter_5.v rtl/xy_routing.v tb/tb_noc_random_scoreboard.v
+scripts\run_sim.bat dataset    # Uniform Random workload
+scripts\run_sim.bat hotspot    # Hotspot Memory Controller workload
+scripts\run_sim.bat transpose  # Matrix Transpose permutation workload
+scripts\run_sim.bat bitcomp    # Bit-Complement bisection stress workload
+scripts\run_sim.bat cnn        # Pipelined Deep Learning CNN workload
+
+# Or manual execution:
+& 'D:\xilinx\Vivado\2023.1\bin\xvlog.bat' -work work rtl/*.v tb/tb_noc_dataset_driven.v
+& 'D:\xilinx\Vivado\2023.1\bin\xelab.bat' -generic_top DATASET_FILE=\"dataset/uniform_random_1000.hex\" -top tb_noc_dataset_driven -snapshot dataset_sim -debug typical
+& 'D:\xilinx\Vivado\2023.1\bin\xsim.bat' dataset_sim -R
+```
+
+### 2. Run Constrained-Random Scoreboard Simulation (Dual-VC Router):
+```powershell
+& 'D:\xilinx\Vivado\2023.1\bin\xvlog.bat' -work work rtl/*.v tb/tb_noc_random_scoreboard.v
 & 'D:\xilinx\Vivado\2023.1\bin\xelab.bat' -top tb_noc_random_scoreboard -snapshot noc_sb_sim5 -debug typical
 & 'D:\xilinx\Vivado\2023.1\bin\xsim.bat' noc_sb_sim5 -R
 ```
 
-### 2. Run System-Level 2x2 2D-Mesh Multi-Hop Simulation:
+### 3. Run System-Level 2x2 2D-Mesh Multi-Hop Simulation:
 ```powershell
-& 'D:\xilinx\Vivado\2023.1\bin\xvlog.bat' -work work tb/tb_noc_mesh_2x2.v
+& 'D:\xilinx\Vivado\2023.1\bin\xvlog.bat' -work work rtl/*.v tb/tb_noc_mesh_2x2.v
 & 'D:\xilinx\Vivado\2023.1\bin\xelab.bat' -top tb_noc_mesh_2x2 -snapshot mesh_sim2 -debug typical
 & 'D:\xilinx\Vivado\2023.1\bin\xsim.bat' mesh_sim2 -R
 ```
 
-### 3. Run Traffic Performance Benchmarks (ASCII Plots & Latency-Load Curves):
+### 4. Regenerate Benchmark Datasets & Graphical Plots:
 ```powershell
-& 'D:\xilinx\Vivado\2023.1\tps\win64\python-3.8.3\python.exe' scripts/benchmark_traffic.py
+python scripts/generate_noc_dataset.py
+python scripts/generate_plots.py
 ```
 
-### 4. Run FPGA Synthesis on Xilinx Kintex-7:
+### 5. Run FPGA Synthesis on Xilinx Kintex-7:
 ```powershell
 & 'D:\xilinx\Vivado\2023.1\bin\vivado.bat' -mode batch -source scripts/run_synth_vc.tcl
 ```

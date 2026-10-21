@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500">
+  <defs>
+    <linearGradient id="grid-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#0f172a" stop-opacity="0.95"/>
+    </linearGradient>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="2" dy="3" stdDeviation="3" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#grid-grad)" rx="12"/>
+  <rect x="2" y="2" width="796" height="496" fill="none" stroke="#334155" stroke-width="2" rx="10"/>
+  <text x="400.0" y="35" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="20" font-weight="700" fill="#f8fafc" text-anchor="middle">Memory Controller Hotspot: Latency Penalty vs. Load</text>
+  <line x1="100" y1="420.0" x2="740" y2="420.0" stroke="#334155" stroke-dasharray="4,4" stroke-width="1"/>
+  <text x="88" y="425.0" font-family="sans-serif" font-size="12" fill="#94a3b8" text-anchor="end">0</text>
+  <line x1="100" y1="363.3333333333333" x2="740" y2="363.3333333333333" stroke="#334155" stroke-dasharray="4,4" stroke-width="1"/>
+  <text x="88" y="368.3333333333333" font-family="sans-serif" font-size="12" fill="#94a3b8" text-anchor="end">3</text>
+  <line x1="100" y1="306.6666666666667" x2="740" y2="306.6666666666667" stroke="#334155" stroke-dasharray="4,4" stroke-width="1"/>
+  <text x="88" y="311.6666666666667" font-family="sans-serif" font-size="12" fill="#94a3b8" text-anchor="end">6</text>
+  <line x1="100" y1="250.0" x2="740" y2="250.0" stroke="#334155" stroke-dasharray="4,4" stroke-width="1"/>
+  <text x="88" y="255.0" font-family="sans-serif" font-size="12" fill="#94a3b8" text-anchor="end">9</text>
+  <line x1="100" y1="193.33333333333334" x2="740" y2="193.33333333333334" stroke="#334155" stroke-dasharray="4,4" stroke-width="1"/>
+  <text x="88" y="198.33333333333334" font-family="sans-serif" font-size="12" fill="#94a3b8" text-anchor="end">12</text>
+  <line x1="100" y1="136.66666666666663" x2="740" y2="136.66666666666663" stroke="#334155" stroke-dasharray="4,4" stroke-width="1"/>
+  <text x="88" y="141.66666666666663" font-family="sans-serif" font-size="12" fill="#94a3b8" text-anchor="end">15</text>
+  <line x1="100" y1="80.0" x2="740" y2="80.0" stroke="#334155" stroke-dasharray="4,4" stroke-width="1"/>
+  <text x="88" y="85.0" font-family="sans-serif" font-size="12" fill="#94a3b8" text-anchor="end">18</text>
+  <line x1="100.0" y1="420" x2="100.0" y2="80" stroke="#334155" stroke-dasharray="4,4" stroke-width="1"/>
+  <text x="100.0" y="442" font-family="sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">0.10</text>
+  <line x1="206.66666666666666" y1="420" x2="206.66666666666666" y2="80" stroke="#334155" stroke-dasharray="4,4" stroke-width="1"/>
+  <text x="206.66666666666666" y="442" font-family="sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">0.25</text>
+  <line x1="313.33333333333337" y1="420" x2="313.33333333333337" y2="80" stroke="#334155" stroke-dasharray="4,4" stroke-width="1"/>
+  <text x="313.33333333333337" y="442" font-family="sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">0.40</text>
+  <line x1="420.00000000000006" y1="420" x2="420.00000000000006" y2="80" stroke="#334155" stroke-dasharray="4,4" stroke-width="1"/>
+  <text x="420.00000000000006" y="442" font-family="sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">0.55</text>
+  <line x1="526.6666666666666" y1="420" x2="526.6666666666666" y2="80" stroke="#334155" stroke-dasharray="4,4" stroke-width="1"/>
+  <text x="526.6666666666666" y="442" font-family="sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">0.70</text>
+  <line x1="633.3333333333333" y1="420" x2="633.3333333333333" y2="80" stroke="#334155" stroke-dasharray="4,4" stroke-width="1"/>
+  <text x="633.3333333333333" y="442" font-family="sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">0.85</text>
+  <line x1="740.0" y1="420" x2="740.0" y2="80" stroke="#334155" stroke-dasharray="4,4" stroke-width="1"/>
+  <text x="740.0" y="442" font-family="sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">1.00</text>
+  <text x="420.0" y="468" font-family="sans-serif" font-size="14" font-weight="600" fill="#cbd5e1" text-anchor="middle">Offered Load (flits / cycle / node)</text>
+  <text x="35" y="250.0" font-family="sans-serif" font-size="14" font-weight="600" fill="#cbd5e1" text-anchor="middle" transform="rotate(-90 35 250.0)">Packet Latency (clock cycles)</text>
+  <polygon points="100.0,420.0 100.0,375.23333333333335 206.66666666666666,372.77777777777777 313.33333333333337,368.43333333333334 420.00000000000006,309.8777777777778 526.6666666666666,185.2111111111111 633.3333333333333,135.15555555555557 740.0,120.61111111111114 740.0,420.0" fill="#38bdf8" fill-opacity="0.15"/>
+  <polygon points="100.0,420.0 100.0,375.0444444444444 206.66666666666666,372.5888888888889 313.33333333333337,365.4111111111111 420.00000000000006,338.5888888888889 526.6666666666666,275.5 633.3333333333333,247.54444444444445 740.0,221.66666666666666 740.0,420.0" fill="#f59e0b" fill-opacity="0.15"/>
+  <polyline fill="none" stroke="#f59e0b" stroke-width="3" points="100.0,375.0 206.7,372.6 313.3,365.4 420.0,338.6 526.7,275.5 633.3,247.5 740.0,221.7"/>
+  <circle cx="100.0" cy="375.0" r="5" fill="#f59e0b" stroke="#0f172a" stroke-width="2"/>
+  <circle cx="206.7" cy="372.6" r="5" fill="#f59e0b" stroke="#0f172a" stroke-width="2"/>
+  <circle cx="313.3" cy="365.4" r="5" fill="#f59e0b" stroke="#0f172a" stroke-width="2"/>
+  <circle cx="420.0" cy="338.6" r="5" fill="#f59e0b" stroke="#0f172a" stroke-width="2"/>
+  <circle cx="526.7" cy="275.5" r="5" fill="#f59e0b" stroke="#0f172a" stroke-width="2"/>
+  <circle cx="633.3" cy="247.5" r="5" fill="#f59e0b" stroke="#0f172a" stroke-width="2"/>
+  <circle cx="740.0" cy="221.7" r="5" fill="#f59e0b" stroke="#0f172a" stroke-width="2"/>
+  <polyline fill="none" stroke="#38bdf8" stroke-width="3" points="100.0,375.2 206.7,372.8 313.3,368.4 420.0,309.9 526.7,185.2 633.3,135.2 740.0,120.6"/>
+  <circle cx="100.0" cy="375.2" r="5" fill="#38bdf8" stroke="#0f172a" stroke-width="2"/>
+  <circle cx="206.7" cy="372.8" r="5" fill="#38bdf8" stroke="#0f172a" stroke-width="2"/>
+  <circle cx="313.3" cy="368.4" r="5" fill="#38bdf8" stroke="#0f172a" stroke-width="2"/>
+  <circle cx="420.0" cy="309.9" r="5" fill="#38bdf8" stroke="#0f172a" stroke-width="2"/>
+  <circle cx="526.7" cy="185.2" r="5" fill="#38bdf8" stroke="#0f172a" stroke-width="2"/>
+  <circle cx="633.3" cy="135.2" r="5" fill="#38bdf8" stroke="#0f172a" stroke-width="2"/>
+  <circle cx="740.0" cy="120.6" r="5" fill="#38bdf8" stroke="#0f172a" stroke-width="2"/>
+  <rect x="233.33333333333337" y="323.43333333333334" width="160" height="30" fill="#0284c7" rx="4"/>
+  <text x="313.33333333333337" y="343.43333333333334" font-family="sans-serif" font-size="11" font-weight="bold" fill="#ffffff" text-anchor="middle">-5.5% Latency Gain at 0.40</text>
+  <line x1="313.33333333333337" y1="353.43333333333334" x2="313.33333333333337" y2="363.43333333333334" stroke="#0284c7" stroke-width="2"/>
+  <rect x="120" y="95" width="250" height="60" fill="#0f172a" fill-opacity="0.9" rx="6" stroke="#475569"/>
+  <line x1="130" y1="110" x2="155" y2="110" stroke="#f59e0b" stroke-width="3"/>
+  <circle cx="142.5" cy="110" r="4" fill="#f59e0b"/>
+  <text x="165" y="114" font-family="sans-serif" font-size="12" fill="#e2e8f0">Single-VC Baseline Router</text>
+  <line x1="130" y1="135" x2="155" y2="135" stroke="#38bdf8" stroke-width="3"/>
+  <circle cx="142.5" cy="135" r="4" fill="#38bdf8"/>
+  <text x="165" y="139" font-family="sans-serif" font-size="12" fill="#e2e8f0">Dual-VC Upgraded Router</text>
+</svg>
