@@ -5,13 +5,41 @@
 [![Target FPGA](https://img.shields.io/badge/Device-Xilinx%20Kintex--7%2028nm-orange.svg)](file:///d:/DN%20Project/synth_vc_router_utilization.rpt)
 [![Fmax](https://img.shields.io/badge/Fmax-229.62%20MHz-success.svg)](file:///d:/DN%20Project/synth_mesh_2x2_timing.rpt)
 [![Packet Loss](https://img.shields.io/badge/Packet%20Loss-0.00%25%20(Lossless)-blueviolet.svg)](file:///d:/DN%20Project/tb/tb_noc_dataset_driven.v)
+[![Conference Paper](https://img.shields.io/badge/Paper-IEEE%20Format%20(Camera--Ready)-red.svg)](docs/conference_paper.md)
+[![Artifact Evaluation](https://img.shields.io/badge/Artifact-Evaluated%20&%20Reproducible-purple.svg)](docs/artifact_evaluation.md)
 
 Design, dataset-driven functional verification, FPGA synthesis, and network traffic benchmarking of an advanced **5-Port Virtual-Channel NoC Router** and **2x2 2D-Mesh Interconnect** developed for the **Data Networks (DN)** course.
 
-🔗 **Project Links**:
-* **Final Project Repository**: [https://github.com/TharunReddy1435/Network-on-Chip_Router_Final](https://github.com/TharunReddy1435/Network-on-Chip_Router_Final)
-* **First Version Repository**: [https://github.com/TharunReddy1435/Network-on-Chip_Router](https://github.com/TharunReddy1435/Network-on-Chip_Router)
-* **Canva Presentation Deck**: [https://www.canva.com/design/DAHWT22A3EI/ds_8qN_X1vPfsqrHb_gyVg/edit](https://www.canva.com/design/DAHWT22A3EI/ds_8qN_X1vPfsqrHb_gyVg/edit)
+🔗 **Quick Links & Artifacts**:
+* 📄 **Conference Paper (Markdown + KaTeX)**: [docs/conference_paper.md](docs/conference_paper.md)
+* 📜 **LaTeX Manuscript & Overleaf Package**: [paper/main.tex](paper/main.tex) | [paper/references.bib](paper/references.bib) | [paper/IEEEtran.cls](paper/IEEEtran.cls)
+* 🏆 **ACM/IEEE Artifact Evaluation Guide**: [docs/artifact_evaluation.md](docs/artifact_evaluation.md)
+* 📊 **300-DPI Publication Plots**: [docs/plots/academic/](docs/plots/academic/)
+* 💻 **Final Project Repository**: [https://github.com/TharunReddy1435/Network-on-Chip_Router_Final](https://github.com/TharunReddy1435/Network-on-Chip_Router_Final)
+* 🎨 **Canva Presentation Deck**: [https://www.canva.com/design/DAHWT22A3EI/ds_8qN_X1vPfsqrHb_gyVg/edit](https://www.canva.com/design/DAHWT22A3EI/ds_8qN_X1vPfsqrHb_gyVg/edit)
+
+---
+
+## 📄 Conference Paper Abstract
+
+> **Title:** *Design, Verification, and FPGA Benchmarking of a 5-Port Virtual-Channel Network-on-Chip Router with Starvation-Free Arbitration*  
+> **Authors:** Shrestitha (`24ECB0B24`), Tharun (`24ECB0B20`), Bhavani (`24ECB0B60`), Gowtham (`24ECB0B41`)  
+> **Affiliation:** Department of Electronics and Communication Engineering  
+>
+> **Abstract:** As modern System-on-Chip (SoC) architectures scale into tens to hundreds of heterogeneous processing elements (PEs), shared-bus communication fabrics experience prohibitive wire congestion, high capacitive latency, and poor bisection bandwidth. Packet-switched Networks-on-Chip (NoC) have emerged as the foundational paradigm for scalable many-core interconnects. However, conventional single-queue NoC routers suffer severely from Head-of-Line (HoL) blocking, starvation under asymmetric traffic, and throughput collapse under memory controller hotspots. 
+>
+> This work presents the architecture, formal verification, and hardware implementation of a high-performance 5-Port Virtual-Channel (VC) NoC Router and an integrated $2 \times 2$ 2D-Mesh Interconnect designed in Verilog HDL. The architecture introduces: (1) dual Virtual-Channel input buffers with First-Word Fall-Through (FWFT) synchronous circular FIFOs; (2) deadlock-free Dimension-Order $XY$ routing; (3) a $10 \times 5$ crossbar switch fabric; (4) starvation-free 10-input Round-Robin arbiters with cyclic priority rotation guaranteeing a strictly bounded worst-case service delay of $\le 9$ cycles; and (5) credit-based backpressure flow control ensuring mathematically guaranteed 0.00% packet loss. Verification across five 1,000-flit benchmark traces and post-synthesis on a 28nm AMD/Xilinx Kintex-7 FPGA demonstrates an $F_{\max}$ of **229.62 MHz**, an **81.3% reduction in HoL contention**, and a **$+7.1\%$ gain in peak saturation capacity**.
+
+```bibtex
+@inproceedings{noc_router_2026,
+  author    = {Shrestitha and Tharun and Bhavani and Gowtham},
+  title     = {Design, Verification, and FPGA Benchmarking of a 5-Port Virtual-Channel Network-on-Chip Router with Starvation-Free Arbitration},
+  booktitle = {Proceedings of the IEEE International Symposium on VLSI (ISVLSI)},
+  year      = {2026},
+  pages     = {1--6},
+  note      = {Artifact available at https://github.com/TharunReddy1435/Network-on-Chip_Router_Final}
+}
+```
 
 ---
 
@@ -109,7 +137,12 @@ Each workload is provided in both **CSV** (for tabular inspection) and **HEX** (
 
 The system implements a scalable packet-switched 2D-Mesh Network-on-Chip (NoC) interconnect supporting multi-flit wormhole routing, dual virtual channels per physical port, and credit-based flow control.
 
-### 1. 2x2 2D-Mesh Network Topology
+### 1. 5-Port Virtual-Channel Router Microarchitecture
+![Router Microarchitecture](docs/plots/academic/fig1_router_microarchitecture.png)
+
+### 2. 2x2 2D-Mesh Network Topology
+![Mesh Interconnect Topology](docs/plots/academic/fig2_mesh_topology.png)
+
 ```
          [PE0]                   [PE1]
            │                       │
@@ -124,21 +157,6 @@ The system implements a scalable packet-switched 2D-Mesh Network-on-Chip (NoC) i
       └────▲────┘               └────▲────┘
            │                       │
          [PE2]                   [PE3]
-```
-
-### 2. Dual Virtual-Channel Router Pipeline
-```
-+-------------------------------------------------------------------------------------------------+
-|                                 5-PORT VIRTUAL-CHANNEL NoC ROUTER                               |
-|                                                                                                 |
-|   [Input Ports]                 [Route Compute]           [Arbitration]        [Crossbar]       |
-|    5x Physical Ports     -->     10x Dimension-Order  -->  5x 10-to-1     -->   10x5 Switch     |
-|    (10x FWFT FIFOs,              XY Routing Logic          Round-Robin          Matrix          |
-|     VC0 & VC1 per port)                                    Arbiters                             |
-|                                                                                                 |
-|                                 [Flow Control]                                                  |
-|                            <--   5x Credit Counters (Lossless Backpressure)                     |
-+-------------------------------------------------------------------------------------------------+
 ```
 
 ### 3. Key Microarchitectural Highlights:

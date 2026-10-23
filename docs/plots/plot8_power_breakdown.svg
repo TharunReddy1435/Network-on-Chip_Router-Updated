@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500">
+  <defs>
+    <linearGradient id="grid-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#0f172a" stop-opacity="0.95"/>
+    </linearGradient>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="2" dy="3" stdDeviation="3" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#grid-grad)" rx="12"/>
+  <rect x="2" y="2" width="796" height="496" fill="none" stroke="#334155" stroke-width="2" rx="10"/>
+  <text x="400.0" y="35" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="20" font-weight="700" fill="#f8fafc" text-anchor="middle">On-Chip Power Scaling on Kintex-7 FPGA (xc7k70t)</text>
+  <line x1="100" y1="420.0" x2="740" y2="420.0" stroke="#334155" stroke-dasharray="3,3" stroke-width="1"/>
+  <text x="88" y="424.0" font-family="sans-serif" font-size="12" fill="#94a3b8" text-anchor="end">0.00 W</text>
+  <line x1="100" y1="352.0" x2="740" y2="352.0" stroke="#334155" stroke-dasharray="3,3" stroke-width="1"/>
+  <text x="88" y="356.0" font-family="sans-serif" font-size="12" fill="#94a3b8" text-anchor="end">0.05 W</text>
+  <line x1="100" y1="284.0" x2="740" y2="284.0" stroke="#334155" stroke-dasharray="3,3" stroke-width="1"/>
+  <text x="88" y="288.0" font-family="sans-serif" font-size="12" fill="#94a3b8" text-anchor="end">0.10 W</text>
+  <line x1="100" y1="216.0" x2="740" y2="216.0" stroke="#334155" stroke-dasharray="3,3" stroke-width="1"/>
+  <text x="88" y="220.0" font-family="sans-serif" font-size="12" fill="#94a3b8" text-anchor="end">0.15 W</text>
+  <line x1="100" y1="148.0" x2="740" y2="148.0" stroke="#334155" stroke-dasharray="3,3" stroke-width="1"/>
+  <text x="88" y="152.0" font-family="sans-serif" font-size="12" fill="#94a3b8" text-anchor="end">0.20 W</text>
+  <line x1="100" y1="80.0" x2="740" y2="80.0" stroke="#334155" stroke-dasharray="3,3" stroke-width="1"/>
+  <text x="88" y="84.0" font-family="sans-serif" font-size="12" fill="#94a3b8" text-anchor="end">0.25 W</text>
+  <line x1="100.0" y1="420" x2="100.0" y2="80" stroke="#334155" stroke-dasharray="3,3" stroke-width="1"/>
+  <text x="100.0" y="440" font-family="sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">50</text>
+  <line x1="260.0" y1="420" x2="260.0" y2="80" stroke="#334155" stroke-dasharray="3,3" stroke-width="1"/>
+  <text x="260.0" y="440" font-family="sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">100</text>
+  <line x1="420.0" y1="420" x2="420.0" y2="80" stroke="#334155" stroke-dasharray="3,3" stroke-width="1"/>
+  <text x="420.0" y="440" font-family="sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">150</text>
+  <line x1="580.0" y1="420" x2="580.0" y2="80" stroke="#334155" stroke-dasharray="3,3" stroke-width="1"/>
+  <text x="580.0" y="440" font-family="sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">200</text>
+  <line x1="667.9359999999999" y1="420" x2="667.9359999999999" y2="80" stroke="#334155" stroke-dasharray="3,3" stroke-width="1"/>
+  <text x="667.9359999999999" y="440" font-family="sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">227.5</text>
+  <line x1="100" y1="420" x2="740" y2="420" stroke="#cbd5e1" stroke-width="1.5"/>
+  <line x1="100" y1="420" x2="100" y2="80" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="420.0" y="466" font-family="sans-serif" font-size="13" font-weight="bold" fill="#cbd5e1" text-anchor="middle">Clock Frequency (MHz)</text>
+  <text x="32" y="250.0" font-family="sans-serif" font-size="13" font-weight="bold" fill="#cbd5e1" text-anchor="middle" transform="rotate(-90 32 250.0)">Total Power Dissipation (Watts)</text>
+  <line x1="100" y1="309.84000000000003" x2="740" y2="309.84000000000003" stroke="#64748b" stroke-width="1.8" stroke-dasharray="4,4"/>
+  <text x="115" y="303.84000000000003" font-family="sans-serif" font-size="11" fill="#64748b">Device Static Power Floor (0.081 W)</text>
+  <polyline fill="none" stroke="#f43f5e" stroke-width="2.5" points="100.0,273.1 260.0,236.4 420.0,199.7 580.0,163.0 667.9,142.6"/>
+  <circle cx="100.0" cy="273.1" r="4.5" fill="#f43f5e"/>
+  <circle cx="260.0" cy="236.4" r="4.5" fill="#f43f5e"/>
+  <circle cx="420.0" cy="199.7" r="4.5" fill="#f43f5e"/>
+  <circle cx="580.0" cy="163.0" r="4.5" fill="#f43f5e"/>
+  <circle cx="667.9" cy="142.6" r="4.5" fill="#f43f5e"/>
+  <polyline fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-dasharray="6,3" points="100.0,282.6 260.0,255.4 420.0,228.2 580.0,201.0 667.9,184.7"/>
+  <rect x="96.5" y="279.1" width="7" height="7" fill="#3b82f6"/>
+  <rect x="256.5" y="251.9" width="7" height="7" fill="#3b82f6"/>
+  <rect x="416.5" y="224.7" width="7" height="7" fill="#3b82f6"/>
+  <rect x="576.5" y="197.5" width="7" height="7" fill="#3b82f6"/>
+  <rect x="664.4" y="181.2" width="7" height="7" fill="#3b82f6"/>
+  <rect x="125" y="100" width="280" height="65" fill="#0f172a" stroke="#475569" stroke-width="1" rx="4" filter="url(#box-shadow)"/>
+  <line x1="135" y1="115" x2="160" y2="115" stroke="#f43f5e" stroke-width="2.5"/>
+  <circle cx="147.5" cy="115" r="4" fill="#f43f5e"/>
+  <text x="169" y="119" font-family="sans-serif" font-size="12" fill="#94a3b8">Dual-VC Router (Total Power = 0.189 W)</text>
+  <line x1="135" y1="139" x2="160" y2="139" stroke="#3b82f6" stroke-width="2.5" stroke-dasharray="6,3"/>
+  <rect x="144" y="135.5" width="7" height="7" fill="#3b82f6"/>
+  <text x="169" y="143" font-family="sans-serif" font-size="12" fill="#94a3b8">2x2 Mesh Interconnect (Total = 0.162 W)</text>
+</svg>
