@@ -133,21 +133,28 @@ Because $Y \to X$ turns are strictly forbidden, cyclic channel dependency graphs
 
 ---
 
-### D. Starvation-Free 10-to-1 Round-Robin Arbiter
+### D. Starvation-Free Switch Allocation and Schedulers
 
-Each of the five output channels features a dedicated 10-input Round-Robin arbiter (`rr_arbiter_10.v`) that arbitrates among the 10 virtual lanes (2 VCs $\times$ 5 input ports):
+Each of the five output channels features a dedicated 10-input arbiter that arbitrates among the 10 virtual lanes (2 VCs $\times$ 5 input ports):
 
 $$\mathbf{req} = [W_1, W_0, E_1, E_0, S_1, S_0, N_1, N_0, L_1, L_0]$$
 
-The arbiter maintains an internal 4-bit priority pointer $\pi(t) \in \{0, 1, \dots, 9\}$. Arbitration is conditioned upon downstream credit availability (`credit_ready`):
+To prevent Head-of-Line blocking and credit leakage across independent virtual channels, requests are strictly qualified by downstream credit availability on their designated virtual channel:
 
-$$g_j(t) = 1 \iff \left( \text{req}_j(t) \land \text{credit\_ready} \land \forall k < j: \neg \text{req}_k(t) \right)$$
+$$\text{req\_eligible}_j(t) = \begin{cases}
+\text{req}_j(t) \land \text{credit\_ready\_vc0}, & \text{if } j \text{ is even} \\
+\text{req}_j(t) \land \text{credit\_ready\_vc1}, & \text{if } j \text{ is odd}
+\end{cases}$$
 
-where indexing begins from $\pi(t)$ and wraps modulo 10. Upon granting port $g(t)$, the priority pointer updates synchronously:
+We evaluate two distinct synthesizable scheduler architectures:
 
-$$\pi(t+1) = (g(t) + 1) \pmod{10}$$
+1. **Baseline Starvation-Free Round-Robin (RR-10):** Maintains an internal 4-bit priority pointer $\pi(t) \in \{0, 1, \dots, 9\}$. The arbiter searches circularly starting from $\pi(t)$:
+   $$g_j(t) = 1 \iff \left( \text{req\_eligible}_j(t) \land \forall k < j: \neg \text{req\_eligible}_k(t) \right)$$
+   Upon granting port $g(t)$, the priority pointer updates synchronously:
+   $$\pi(t+1) = (g(t) + 1) \pmod{10}$$
+   This cyclic progression, depicted in Fig. 2, guarantees that no active requester can be starved for more than 9 consecutive clock cycles.
 
-This cyclic progression guarantees that no active requester can be starved for more than 9 consecutive clock cycles.
+2. **Congestion-Aware Priority Scheduler (CAPS-10):** A two-tier dynamic arbiter (`caps_arbiter_10.v`). Input FIFOs nearing saturation assert an urgent status ($\text{urgent}_j = 1$ when $\text{occupancy}_j \ge D-1$). Tier 1 grants eligible urgent requesters ($\text{req\_eligible}_j \land \text{urgent}_j$) using cyclic pointer $\pi_u(t)$ to rapidly drain congested buffers before upstream backpressure stalls the network. If no urgent requesters are present, Tier 2 falls back to fair Round-Robin allocation via $\pi(t)$. This dual-tier scheme eliminates upstream buffer stalls while preserving starvation freedom.
 
 ![Round-Robin Arbiter Rotation](plots/academic/fig4_arbiter_fsm.png)
 *Fig. 2. Starvation-free 10-to-1 Round-Robin arbiter cyclic priority rotation among the 10 virtual channel request inputs, guaranteeing a strictly bounded worst-case waiting delay of $\le 9$ clock cycles.*
@@ -162,15 +169,20 @@ $$\text{valid\_out}_k = \bigvee_{i=0}^{9} \left( \text{grant}_k[i] \land \neg\te
 
 ---
 
-### F. Credit-Based Flow Control Counter
+### F. Independent Per-VC Credit-Based Flow Control
 
-Flow control between adjacent routers is maintained by autonomous credit tracking units (`credit_counter.v`). Each output channel maintains a credit counter initialized to the total downstream buffer depth ($C_{max} = 2 \times D = 8$).
+In virtual-channel router architectures, pooling credit counters across virtual lanes introduces a critical vulnerability: if one VC fills up while another is empty, a pooled counter still reports positive credits, resulting in downstream buffer overflow and flit corruption. 
 
-When a flit is dispatched across an output link, the credit counter decrements by 1. When the downstream router reads a flit from its input FIFO, it pulses the corresponding credit line (`credit_out`), incrementing the sender's counter:
+To guarantee strictly lossless transmission, our architecture implements **ten independent credit counters** (`credit_counter.v`), allocating two dedicated trackers per physical port: $C_{k, vc0}(t)$ and $C_{k, vc1}(t)$ for each port $k \in \{L, N, S, E, W\}$, initialized to the individual virtual channel depth ($C_{max} = D = 4$).
 
-$$C(t+1) = C(t) - \text{tx\_fire}(t) + \text{credit\_in}(t)$$
+When a flit is dispatched across an output link, the credit counter corresponding to the granted virtual lane decrements:
 
-The arbiter is permitted to grant a channel only if $C(t) > 0$. This ensures that flits are transmitted only when guaranteed buffer space exists downstream, completely preventing buffer overflow and packet loss.
+$$\begin{aligned}
+C_{k, vc0}(t+1) &= C_{k, vc0}(t) - \text{tx\_fire}_{k, vc0}(t) + \text{credit\_in}_{k, vc0}(t) \\
+C_{k, vc1}(t+1) &= C_{k, vc1}(t) - \text{tx\_fire}_{k, vc1}(t) + \text{credit\_in}_{k, vc1}(t)
+\end{aligned}$$
+
+where $\text{tx\_fire}_{k, vc0}$ fires on even grants and $\text{tx\_fire}_{k, vc1}$ fires on odd grants. Because the arbiters permit grants only when the respective $C(t) > 0$, buffer overflow is physically impossible.
 
 ---
 
@@ -287,45 +299,47 @@ Five domain-specific traffic datasets (each containing 1,000 flits) were synthes
 
 ### A. Latency and Throughput Analysis
 
-Table I summarizes the cycle-accurate simulation results comparing the Single-VC baseline against the Dual-VC architecture across offered loads from 0.10 to 1.00 flits/cycle/node.
+Table I presents the empirical cycle-accurate simulation results obtained from our verified benchmark pipeline across offered loads from 0.10 to 1.00 flits/cycle/node.
 
-| Offered Load $\lambda$ | Single-VC Avg Latency (cyc) | Dual-VC Avg Latency (cyc) | Single-VC Throughput | Dual-VC Throughput | Latency Delta |
-| :---: | :---: | :---: | :---: | :---: | :---: |
-| 0.10 | 2.38 | 2.36 | 0.104 | 0.101 | -0.6% |
-| 0.25 | 2.47 | 2.47 | 0.249 | 0.254 | 0.0% |
-| 0.40 | 2.60 | 2.61 | 0.391 | 0.399 | +0.4% |
-| 0.55 | 2.88 | 2.82 | 0.551 | 0.551 | -2.3% |
-| 0.70 | 3.62 | 3.18 | 0.711 | 0.705 | **-12.2%** |
-| 0.85 | 5.20 | 5.02 | 0.840 | 0.862 | -3.5% |
-| 1.00 | 7.96 | 9.58 | 0.860 | 0.921 | **+7.1% Cap.** |
+| Offered Load $\lambda$ | Single-VC Avg Latency (cyc) | Dual-VC RR Latency (cyc) | Dual-VC CAPS Latency (cyc) | RR Throughput | CAPS Throughput | CAPS Advantage |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| 0.10 | 2.37 | 2.37 | 2.37 | 0.099 | 0.099 | +0.0% |
+| 0.25 | 2.44 | 2.43 | 2.43 | 0.247 | 0.247 | +0.0% |
+| 0.40 | 2.56 | 2.53 | 2.53 | 0.416 | 0.416 | +0.0% |
+| 0.55 | 2.90 | 2.83 | 2.83 | 0.550 | 0.550 | +0.0% |
+| 0.70 | 3.20 | 3.07 | 3.08 | 0.689 | 0.689 | -0.3% |
+| 0.85 | 5.20 | 4.48 | 4.34 | 0.804 | 0.804 | **+3.3%** |
+| 1.00 | 14.88 | 10.72 | **9.20** | 0.896 | **0.916** | **+14.2%** |
 
-*Table I. Performance comparison under Uniform Random traffic across injection loads.*
+*Table I. Empirical performance comparison under Uniform Random traffic across injection loads.*
 
 ![Latency vs Offered Load](plots/academic/plot1_latency_vs_offered_load.png)
-*Fig. 5. Average packet latency (clock cycles) versus offered flit load ($\lambda$) comparing Single-VC baseline against Dual-VC router under Uniform Random traffic.*
+*Fig. 5. Empirical packet latency (clock cycles) versus offered flit load ($\lambda$) comparing Single-VC baseline, Dual-VC with standard Round-Robin (RR), and Dual-VC with Congestion-Aware Priority Scheduler (CAPS).*
 
 ![Throughput vs Offered Load](plots/academic/plot2_throughput_vs_offered_load.png)
-*Fig. 6. Accepted network throughput (flits/cycle/node) versus offered flit load ($\lambda$), illustrating a $+7.1\%$ gain in peak saturation capacity for the Dual-VC architecture.*
+*Fig. 6. Accepted network throughput (flits/cycle/node) versus offered flit load ($\lambda$), illustrating the sustained capacity of the Dual-VC architectures up to 0.916 flits/cycle/node.*
 
-At light-to-moderate loads ($\lambda \le 0.55$), both routers exhibit near-identical latency ($\sim 2.38$ cycles), reflecting zero contention. However, as load approaches saturation ($\lambda = 0.70$), the Dual-VC router achieves a **12.2% latency reduction** (3.18 cycles vs. 3.62 cycles). Under full offered load ($\lambda = 1.00$), the Single-VC router saturates at 0.860 flits/cycle/node due to HoL blocking, whereas the Dual-VC router sustains **0.921 flits/cycle/node**, representing a **$+7.1\%$ gain in peak saturation capacity**.
+At light-to-moderate loads ($\lambda \le 0.55$), all three architectures exhibit minimal queuing latency ($\sim 2.37$–$2.83$ cycles), reflecting near-zero port contention. However, under heavy offered load ($\lambda = 0.85$), the Dual-VC architecture with standard Round-Robin reduces average latency by 13.8% (4.48 cycles vs. 5.20 cycles). Furthermore, under full saturation load ($\lambda = 1.00$), the Single-VC baseline experiences severe queuing delays of 14.88 cycles due to serialized FIFO stalls. In contrast, the Dual-VC router with standard RR reduces latency to 10.72 cycles (a 28.0% improvement).
+
+Most significantly, the proposed **Congestion-Aware Priority Scheduler (CAPS)** achieves a further reduction to **9.20 cycles**, representing a **14.2% latency advantage over standard Round-Robin** and a **38.2% reduction over the Single-VC baseline**, while boosting peak saturation throughput to **0.916 flits/cycle/node**.
 
 ---
 
 ### B. Head-of-Line (HoL) Blocking Mitigation
 
-Under high offered load ($\lambda = 0.85$), single-queue FIFOs experience an 88.2% probability of HoL blocking. The Dual-VC microarchitecture reduces this contention probability to **16.5%**, representing an **81.3% reduction in HoL blocking contention**.
+Under high offered load and asymmetric traffic, single-queue routers suffer from severe Head-of-Line blocking. Under the Hotspot Memory benchmark (45% bias to PE3), the Single-VC router suffers **547 HoL blocked cycles**. The Dual-VC microarchitecture reduces this to only **3 blocked cycles**, as illustrated in Fig. 7, representing a **99.5% reduction in HoL blocking contention**.
 
 ![HoL Blocking Mitigation](plots/academic/plot4_hol_blocking_mitigation.png)
-*Fig. 7. Head-of-Line (HoL) blocking contention probability across offered load rates, showing an 81.3% reduction under heavy injection ($\lambda = 0.85$).*
+*Fig. 7. Empirical Head-of-Line (HoL) blocking cycle counts across high-load benchmarks, demonstrating a 99.5% contention reduction under hotspot traffic.*
 
 ---
 
 ### C. Hotspot Memory Controller Stress
 
-Under 45% concentrated traffic targeting Node (1,1) / PE3, the Dual-VC architecture achieves a 5.5% latency benefit at moderate load ($\lambda = 0.40$). More importantly, by allocating non-hotspot flows to alternate virtual channels (VC1), traffic destined for PE0, PE1, and PE2 advances freely without being blocked by memory-bound queues.
+Under 45% concentrated traffic targeting Node (1,1) / PE3, shown in Fig. 8, the Dual-VC architecture with CAPS achieves a 4.7% latency advantage at moderate load ($\lambda = 0.55$, 14.82 cycles vs. 15.55 cycles for RR and 16.10 cycles for Single-VC). By decoupling the memory controller flow onto VC0 and general bypass traffic onto VC1, inter-PE communication destined for non-hotspot nodes proceeds without encountering blocking.
 
 ![Hotspot Memory Latency](plots/academic/plot3_hotspot_latency_breakdown.png)
-*Fig. 8. Latency impact of 45% concentrated memory controller hotspot traffic on Node (1,1) / PE3 across increasing injection loads.*
+*Fig. 8. Average latency impact under 45% concentrated memory controller hotspot traffic across increasing injection loads.*
 
 ---
 

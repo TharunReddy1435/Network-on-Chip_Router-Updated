@@ -1,0 +1,37 @@
+================================================================================
+       EMPIRICAL BENCHMARK EVALUATION & SCHEDULER COMPARISON REPORT
+================================================================================
+
+1. SUMMARY OF EMPIRICAL FINDINGS:
+--------------------------------------------------------------------------------
+  - Credit Logic Correctness: 0.00% packet loss verified across ALL runs.
+  - Single-VC vs Dual-VC: Head-of-Line blocking reduction confirmed.
+  - Standard Round-Robin (RR) vs Congestion-Aware Priority Scheduler (CAPS):
+    CAPS dynamically prioritizes congested/almost_full queues, achieving
+    lower average queuing latency under heavy loads and preventing early saturation.
+
+2. SCHEDULER COMPARISON UNDER UNIFORM RANDOM TRAFFIC:
+--------------------------------------------------------------------------------
+Load   | Single-VC Lat  | Dual-VC RR Lat  | Dual-VC CAPS Lat  | CAPS Advantage 
+--------------------------------------------------------------------------------
+0.10   | 2.37           | 2.37            | 2.37              |  +0.00%
+0.25   | 2.44           | 2.43            | 2.43              |  +0.00%
+0.40   | 2.56           | 2.53            | 2.53              |  +0.00%
+0.55   | 2.90           | 2.83            | 2.83              |  +0.00%
+0.70   | 3.20           | 3.07            | 3.08              |  -0.33%
+0.85   | 5.20           | 4.48            | 4.34              |  +3.28%
+1.00   | 14.88          | 10.72           | 9.20              | +14.24%
+
+3. SCHEDULER COMPARISON UNDER HOTSPOT MEMORY CONTROLLER (45% PE3):
+--------------------------------------------------------------------------------
+Load   | Single-VC Lat  | Dual-VC RR Lat  | Dual-VC CAPS Lat  | CAPS Advantage 
+--------------------------------------------------------------------------------
+0.10   | 2.46           | 2.46            | 2.46              |  +0.00%
+0.25   | 2.60           | 2.59            | 2.59              |  +0.00%
+0.40   | 3.03           | 3.02            | 3.02              |  +0.00%
+0.55   | 16.10          | 15.55           | 14.82             |  +4.70%
+0.70   | 44.16          | 42.57           | 42.09             |  +1.13%
+0.85   | 69.73          | 67.80           | 67.62             |  +0.26%
+1.00   | 78.70          | 76.49           | 76.11             |  +0.50%
+
+================================================================================

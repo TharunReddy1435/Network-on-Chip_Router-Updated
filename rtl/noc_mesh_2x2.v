@@ -29,9 +29,10 @@
 `timescale 1ns / 1ps
 
 module noc_mesh_2x2 #(
-    parameter DATA_WIDTH = 16,
-    parameter VC_DEPTH   = 4,
-    parameter ADDR_WIDTH = 2
+    parameter DATA_WIDTH       = 16,
+    parameter VC_DEPTH         = 4,
+    parameter ADDR_WIDTH       = 2,
+    parameter USE_CAPS_ARBITER = 0  // 0: Standard Round-Robin, 1: Congestion-Aware CAPS
 )(
     input  wire                  clk,
     input  wire                  rst_n,
@@ -123,8 +124,11 @@ module noc_mesh_2x2 #(
     // =========================================================================
     // Router (0,0)
     // =========================================================================
-    noc_router_vc #(.CURRENT_X(2'd0), .CURRENT_Y(2'd0), .DATA_WIDTH(DATA_WIDTH), .VC_DEPTH(VC_DEPTH), .ADDR_WIDTH(ADDR_WIDTH))
-    router_00 (
+    noc_router_vc #(
+        .CURRENT_X(2'd0), .CURRENT_Y(2'd0),
+        .DATA_WIDTH(DATA_WIDTH), .VC_DEPTH(VC_DEPTH), .ADDR_WIDTH(ADDR_WIDTH),
+        .USE_CAPS_ARBITER(USE_CAPS_ARBITER)
+    ) router_00 (
         .clk(clk), .rst_n(rst_n),
 
         // Local PE 0
@@ -162,8 +166,11 @@ module noc_mesh_2x2 #(
     // =========================================================================
     // Router (1,0)
     // =========================================================================
-    noc_router_vc #(.CURRENT_X(2'd1), .CURRENT_Y(2'd0), .DATA_WIDTH(DATA_WIDTH), .VC_DEPTH(VC_DEPTH), .ADDR_WIDTH(ADDR_WIDTH))
-    router_10 (
+    noc_router_vc #(
+        .CURRENT_X(2'd1), .CURRENT_Y(2'd0),
+        .DATA_WIDTH(DATA_WIDTH), .VC_DEPTH(VC_DEPTH), .ADDR_WIDTH(ADDR_WIDTH),
+        .USE_CAPS_ARBITER(USE_CAPS_ARBITER)
+    ) router_10 (
         .clk(clk), .rst_n(rst_n),
 
         // Local PE 1
@@ -201,8 +208,11 @@ module noc_mesh_2x2 #(
     // =========================================================================
     // Router (0,1)
     // =========================================================================
-    noc_router_vc #(.CURRENT_X(2'd0), .CURRENT_Y(2'd1), .DATA_WIDTH(DATA_WIDTH), .VC_DEPTH(VC_DEPTH), .ADDR_WIDTH(ADDR_WIDTH))
-    router_01 (
+    noc_router_vc #(
+        .CURRENT_X(2'd0), .CURRENT_Y(2'd1),
+        .DATA_WIDTH(DATA_WIDTH), .VC_DEPTH(VC_DEPTH), .ADDR_WIDTH(ADDR_WIDTH),
+        .USE_CAPS_ARBITER(USE_CAPS_ARBITER)
+    ) router_01 (
         .clk(clk), .rst_n(rst_n),
 
         // Local PE 2
@@ -240,8 +250,11 @@ module noc_mesh_2x2 #(
     // =========================================================================
     // Router (1,1)
     // =========================================================================
-    noc_router_vc #(.CURRENT_X(2'd1), .CURRENT_Y(2'd1), .DATA_WIDTH(DATA_WIDTH), .VC_DEPTH(VC_DEPTH), .ADDR_WIDTH(ADDR_WIDTH))
-    router_11 (
+    noc_router_vc #(
+        .CURRENT_X(2'd1), .CURRENT_Y(2'd1),
+        .DATA_WIDTH(DATA_WIDTH), .VC_DEPTH(VC_DEPTH), .ADDR_WIDTH(ADDR_WIDTH),
+        .USE_CAPS_ARBITER(USE_CAPS_ARBITER)
+    ) router_11 (
         .clk(clk), .rst_n(rst_n),
 
         // Local PE 3

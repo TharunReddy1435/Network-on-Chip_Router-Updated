@@ -71,16 +71,33 @@
 
 ## 3. Step-by-Step Reproduction Instructions
 
-### Step 1: Regenerate Benchmark Datasets (Optional)
-The pre-synthesized 1,000-flit benchmark traces are included in `datasets/*.hex`. To re-generate or modify injection rates:
+### Step 1: Execute Trustworthy Cycle-Accurate NoC Benchmark Pipeline
+Run the cycle-accurate reference simulation engine across all 5 benchmark workloads and 3 router architectures (Single-VC Baseline, Dual-VC with standard Round-Robin, Dual-VC with Congestion-Aware Priority Scheduler CAPS):
 ```powershell
-python scripts/generate_noc_dataset.py
+python scripts/noc_cycle_sim.py
 ```
-This produces 5 trace files containing 1,000 hexadecimal flits formatted for `$readmemh` consumption in Verilog.
+*Outputs generated:*
+* `benchmark_results/raw_benchmark_metrics.csv` — Full matrix of raw empirical latencies, throughputs, HoL cycles, and 0.00% packet loss metrics.
+* `benchmark_results/summary_report.txt` — Comparative performance analysis quantifying the advantage of the CAPS scheduler over standard Round-Robin.
 
 ---
 
-### Step 2: Run Vivado Simulation Regressions
+### Step 2: Regenerate Publication-Grade Plots & Diagrams
+All 8 experimental figures and 4 architectural block diagrams are generated directly from the real simulation metrics in `benchmark_results/raw_benchmark_metrics.csv`:
+```powershell
+# Generate experimental performance plots from empirical data
+python scripts/generate_publication_plots.py
+
+# Generate architectural block diagrams
+python scripts/generate_diagrams_matplotlib.py
+```
+Outputs are automatically synced to:
+* `paper/figures/` (for LaTeX compilation)
+* `docs/plots/academic/` (for GitHub markdown rendering)
+
+---
+
+### Step 3: Run RTL Simulation Regressions
 
 Execute simulations using the unified automated test runner (`scripts\run_sim.bat`):
 
